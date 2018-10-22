@@ -231,17 +231,17 @@ h m = Compose m g  -->  magicR :: m (Compose m g (m t)) -> Compose m g t  -->  m
 ```
 
 In the first case we need to be able to push the first `m` inside of `g` where we can then join the inner `m`s.
-This requires `g` to be Distributive.  This composition doesn't really buy us anything new though.  `(Compose g m)
-x` is really just `g (m x)`, so what this case really represents is a convoluted way of writing a regular lens
-between monad wrapped values
+This requires `g` to be distributive, which, according to the documentation distributive documentation means `g m
+a` isomorphic to `x -> m a` for some `x`.  The interesting thing about this composition is `(Compose g m) a = g (m
+a)`, so what we really have is just a regular lens with monad wrapped covariant (output) parts
 
 ```
-(Profunctor p, Applicative g, Monad m) => p a ((Compose g m) b) -> p s ((Compose g m) t)
-  -->  (Profunctor p, Applicative g, Monad m) => p a (g (m b) -> p s (g (m t))
+((Compose g m) b) -> p s ((Compose g m) t)  -->  p a (g (m b) -> p s (g (m t))
 ```
 
-The second case is more interesting.  In this case we need to pull the final `m` out of the `g` where we can then
-join the outer `m`s.  This requires `g` to be Traversable
+Appart from the Identity functor, which makes no difference on which side you compose it, our standard functors are
+not distributive though, so we turn our attention to the second case.  In this case we need to pull the final `m`
+out of the `g` where we can then join the outer `m`s.  This requires `g` to be Traversable
 
 ```haskell
 magic = magicL :: m (Compose g m (m t)) -> Compose g m t
