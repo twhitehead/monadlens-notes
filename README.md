@@ -111,7 +111,7 @@ When we get to Prisms though, we run into the problem that we managed to dodge a
 like Choice, we need to be able to form the non-monadic inputs they required.  This requires some additional
 functionality as all our inputs are locked inside of monads.  What we want is something like
 
-```
+```haskell
 lmap' :: (a -> m b) -> p b (m c) -> p a (m c)  -- not a standard function
 ```
 
@@ -120,16 +120,19 @@ directly access the contravariant part (input) and feed it with `(>>=)`.  We cou
 we can lift it to being over the monad via the `map'` function.  This last option seems to be the least restrictive
 as `lmap'` and `map'` turn out to be equivalent and `lmap'` trivially exists for all Representable profunctors.
 
-```
+```haskell
 map' :: p a b -> p (m a) (m b)
 map' = lmap' id . fmap return
-
+```
+```haskell
 lmap' :: Mapping p => (a -> m b) -> p b (m c) -> p a (m c)
 lmap' amb = dimap amb join . map'
-
+```
+```haskell
 lmap' :: Representable p => (a -> m b) -> p b (m c) -> p a (m c)
 lmap' amb = tabulate . (>>= sieve pbmc) . amb
-
+```
+```haskell
 toPrism :: (Mapping p, Monadtrans h, Monad m, Monad (h m))  -- 
         => (s -> m (Either a t))  -- to'
         -> (b -> m t)             -- from
