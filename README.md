@@ -238,14 +238,18 @@ a)`, so what we really have is just a regular lens with monad wrapped covariant 
 ```
 ((Compose g m) b) -> p s ((Compose g m) t)  -->  p a (g (m b) -> p s (g (m t))
 ```
+```haskell
+magicL :: m (Compose g m (m t)) -> Compose g m t
+magicL = Compose . fmap (join . join) . distribute . fmap getCompose
+```
 
 Appart from the Identity functor, which makes no difference on which side you compose it, our standard functors are
 not distributive though, so we turn our attention to the second case.  In this case we need to pull the final `m`
 out of the `g` where we can then join the outer `m`s.  This requires `g` to be Traversable
 
 ```haskell
-magic = magicL :: m (Compose g m (m t)) -> Compose g m t
-magic = magicL = Compose . fmap (join . join) . distribute . fmap getCompose
+magic = magicR :: m (Compose m g (m t)) -> Compose m g t
+magic = magicR = Compose . join . join . fmap (fmap sequenceA . getCompose)
 ```
 
 Having completed the `toPrism'` lens, we can now return to writing a revised getter that does not needlessly carry
